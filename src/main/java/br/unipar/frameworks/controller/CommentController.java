@@ -1,10 +1,13 @@
 package br.unipar.frameworks.controller;
 
 import br.unipar.frameworks.dto.CommentRequest;
+import br.unipar.frameworks.dto.CommentResponse;
 import br.unipar.frameworks.model.Comment;
 import br.unipar.frameworks.model.Product;
 import br.unipar.frameworks.repository.CommentRepository;
 import br.unipar.frameworks.repository.ProductRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +25,19 @@ public class CommentController {
     }
 
     @GetMapping("/product/{productId}")
-    public List<Comment> listByProduct(@PathVariable Long productId) {
-        return commentRepository.findByProductId(productId);
+    public List<CommentResponse> listByProduct(@PathVariable Long productId) {
+        return commentRepository.findByProductId(productId).stream()
+                .map(c -> new CommentResponse(c.getId(), c.getText(), c.getProduct().getId()))
+                .toList();
     }
 
     @PostMapping
-    public Comment create(@RequestBody CommentRequest request) {
+    public ResponseEntity<CommentResponse> create(@Valid @RequestBody CommentRequest request) {
         Product product = productRepository.findById(request.productId()).orElseThrow();
         Comment comment = new Comment();
         comment.setText(request.text());
         comment.setProduct(product);
-        return commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
+        return ResponseEntity.ok(new CommentResponse(saved.getId(), saved.getText(), saved.getProduct().getId()));
     }
 }
