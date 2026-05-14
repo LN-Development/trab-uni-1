@@ -10,8 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import java.math.BigDecimal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 public class VulnerableLabApplication {
@@ -23,15 +22,16 @@ public class VulnerableLabApplication {
     @Bean
     CommandLineRunner seedData(UserRepository userRepository,
                                ProductRepository productRepository,
-                               CommentRepository commentRepository) {
+                               CommentRepository commentRepository,
+                               PasswordEncoder passwordEncoder) {
         return args -> {
-            User admin = new User(null, "Admin", "admin@lab.local", "admin123", "ADMIN");
-            User student = new User(null, "Aluno", "aluno@lab.local", "aluno123", "USER");
+            User admin = new User(null, "Admin", "admin@lab.local", passwordEncoder.encode("admin123"), "ADMIN");
+            User student = new User(null, "Aluno", "aluno@lab.local", passwordEncoder.encode("aluno123"), "USER");
             userRepository.save(admin);
             userRepository.save(student);
 
-            Product p1 = new Product(null, "Notebook", "Notebook para testes em laboratório", new BigDecimal("3500.00"));
-            Product p2 = new Product(null, "Mouse", "Mouse USB", new BigDecimal("50.00"));
+            Product p1 = new Product(null, "Notebook", "Notebook para testes em laboratório", 3500.0);
+            Product p2 = new Product(null, "Mouse", "Mouse USB", 50.0);
             productRepository.save(p1);
             productRepository.save(p2);
 

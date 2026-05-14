@@ -1,15 +1,4 @@
 package br.unipar.frameworks.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponse {
-    private Long id;
-    private String name;
-    private String email;
-    private String role;
+public record UserResponse(Long id, String name, String email, String role) {
 }

@@ -22,18 +22,13 @@ public class ProductController {
 
     @GetMapping
     public Page<ProductResponse> listProducts(Pageable pageable) {
-        return productRepository.findAll(pageable)
-                .map(p -> new ProductResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice()));
+        return productRepository.findAll(pageable).map(this::toResponse);
     }
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest req) {
-        Product p = new Product();
-        p.setName(req.name());
-        p.setDescription(req.description());
-        p.setPrice(req.price());
-        Product saved = productRepository.save(p);
-        return ResponseEntity.ok(new ProductResponse(saved.getId(), saved.getName(), saved.getDescription(), saved.getPrice()));
+        Product p = new Product(null, req.name(), req.description(), req.price());
+        return ResponseEntity.ok(toResponse(productRepository.save(p)));
     }
 
     @PutMapping("/{id}")
@@ -42,7 +37,10 @@ public class ProductController {
         p.setName(req.name());
         p.setDescription(req.description());
         p.setPrice(req.price());
-        Product updated = productRepository.save(p);
-        return ResponseEntity.ok(new ProductResponse(updated.getId(), updated.getName(), updated.getDescription(), updated.getPrice()));
+        return ResponseEntity.ok(toResponse(productRepository.save(p)));
+    }
+
+    private ProductResponse toResponse(Product p) {
+        return new ProductResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice());
     }
 }

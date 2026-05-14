@@ -5,7 +5,6 @@ import br.unipar.frameworks.model.User;
 import br.unipar.frameworks.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -27,31 +26,32 @@ public class UserController {
 
     @GetMapping
     public Page<UserResponse> listUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(u -> new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole()));
+        return userRepository.findAll(pageable).map(this::toResponse);
     }
 
     @GetMapping("/{id}")
     public UserResponse getUser(@PathVariable Long id) {
-        User u = userRepository.findById(id).orElseThrow();
-        return new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole());
+        return toResponse(userRepository.findById(id).orElseThrow());
     }
 
     @GetMapping("/search-safe")
     public List<UserResponse> safeSearch(@RequestParam String term) {
         return userRepository.safeSearchByName(term).stream()
-                .map(u -> new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole()))
+                .map(this::toResponse)
                 .toList();
     }
 
     @GetMapping("/search-unsafe")
     public List<UserResponse> unsafeSearch(@RequestParam String term) {
         String jpql = "select u from User u where lower(u.name) like lower(:term)";
-        TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
-        query.setParameter("term", "%" + term + "%");
-        
-        return query.getResultList().stream()
-                .map(u -> new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole()))
+        return entityManager.createQuery(jpql, User.class)
+                .setParameter("term", "%" + term + "%")
+                .getResultList().stream()
+                .map(this::toResponse)
                 .toList();
+    }
+
+    private UserResponse toResponse(User u) {
+        return new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole());
     }
 }

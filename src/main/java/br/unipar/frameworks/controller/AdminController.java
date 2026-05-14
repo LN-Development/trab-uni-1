@@ -1,6 +1,7 @@
 package br.unipar.frameworks.controller;
 
 import br.unipar.frameworks.dto.UserResponse;
+import br.unipar.frameworks.model.User;
 import br.unipar.frameworks.repository.UserRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +20,18 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public List<UserResponse> adminUsers() {
+    public List<UserResponse> listUsers() {
         return userRepository.findAll().stream()
-                .map(u -> new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole()))
+                .map(this::toResponse)
                 .toList();
     }
 
     @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable Long id) {
         userRepository.deleteById(id);
+    }
+
+    private UserResponse toResponse(User u) {
+        return new UserResponse(u.getId(), u.getName(), u.getEmail(), u.getRole());
     }
 }
